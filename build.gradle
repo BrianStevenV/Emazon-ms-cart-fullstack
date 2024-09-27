@@ -1,0 +1,77 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.4'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.PowerUpFullStack'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2023.0.3")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
+
+	//Mapstruct
+	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+
+	//test
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+	testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
+//	testImplementation 'org.mockito:mockito-core:4.0.0'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.mockito:mockito-inline:5.0.0'
+
+	//jwt
+	implementation 'com.nimbusds:nimbus-jose-jwt:9.40'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
+			'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	//Feign client
+	implementation 'io.github.openfeign:feign-httpclient'
+
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
