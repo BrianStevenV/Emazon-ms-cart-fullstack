@@ -14,4 +14,6 @@ public class ConstantsCartUseCase {
 
     public static final int MAX_INT_CATEGORY = 3;
     public static final int INVALID_COUNT_CATEGORY = 0;
+
+    public static final int MIN_AMOUNT_TOTAL = 0;
 }

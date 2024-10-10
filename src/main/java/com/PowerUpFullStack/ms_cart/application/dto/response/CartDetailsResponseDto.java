@@ -1,19 +1,20 @@
 package com.PowerUpFullStack.ms_cart.application.dto.response;
 
+import com.PowerUpFullStack.ms_cart.domain.model.Cart;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CartResponseDto {
+public class CartDetailsResponseDto {
     private Long id;
-    private Long userId;
+    private Integer amount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<CartDetailsResponseDto> cartDetails;
+    private Boolean active; // Cambiado a 'active'
+    private Long productId;
+    private Cart cart;
 }

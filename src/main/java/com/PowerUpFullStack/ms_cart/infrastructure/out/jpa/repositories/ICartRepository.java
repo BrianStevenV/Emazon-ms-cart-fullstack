@@ -6,16 +6,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
+
+import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.repositories.utils.ConstantsRepository.PARAM_FIND_CART_ENTITY;
+import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.repositories.utils.ConstantsRepository.QUERY_FIND_CART_ENTITY;
 
 @Repository
 public interface ICartRepository extends JpaRepository<CartEntity, Long> {
+//    @Query(value = "SELECT * FROM cart WHERE user_id = :userId", nativeQuery = true)
+    @Query(value = QUERY_FIND_CART_ENTITY, nativeQuery = true)
+    Optional<CartEntity> findCartEntity(@Param(PARAM_FIND_CART_ENTITY) long userId);
 
-    @Query(value = "SELECT c.id AS cart_id, c.user_id, " +
-            "cd.id AS cart_detail_id, cd.amount, cd.created_at, cd.updated_at, cd.is_active, cd.product_id " +
-            "FROM cart c " +
-            "LEFT JOIN cart_details cd ON c.id = cd.cart_id " +
-            "WHERE c.user_id = :userId", nativeQuery = true)
-    List<Object[]> findByUserId(@Param("userId") Long userId);
 
 }

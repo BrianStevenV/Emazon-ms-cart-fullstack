@@ -1,5 +1,6 @@
 package com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -49,10 +50,10 @@ public class CartDetailsEntity {
     @Column(name = CART_COLUMN_PRODUCT_ID, nullable = false)
     private Long productId;
 
-//    @Column(name = CART_COLUMN_CART_ID, nullable = false)
-//    private Long cartId;
+    @Column(name = CART_COLUMN_CART_ID, nullable = false)
+    private Long cartId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = CART_COLUMN_CART_ID, nullable = false)  // Define la columna para la FK
-    private CartEntity cart;
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name = CART_COLUMN_CART_ID, nullable = false)  // Define la columna para la FK
+//    private CartEntity cart;
 }

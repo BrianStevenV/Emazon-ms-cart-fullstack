@@ -15,7 +15,7 @@ public class ConstantsEntity {
     public static final String CART_COLUMN_USER_ID = "user_id";
     public static final String CART_COLUMN_CART_ID = "cart_id";
 
-    public static final String CART_DETAILS_ONE_TO_MANY_MAPPED_BY = "cart";
+    public static final String CART_DETAILS_ONE_TO_MANY_MAPPED_BY = "cartId";
 
     public static final String COLUMN_DEFINITION_BOOLEAN_DEFAULT_TRUE = "boolean default true";
 }

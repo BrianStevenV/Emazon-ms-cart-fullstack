@@ -1,7 +1,12 @@
 package com.PowerUpFullStack.ms_cart.application.handler.impl;
 
+import com.PowerUpFullStack.ms_cart.application.dto.request.AddProductToCartRequestDto;
 import com.PowerUpFullStack.ms_cart.application.dto.request.CartDetailsRequestDto;
+import com.PowerUpFullStack.ms_cart.application.dto.request.FilterByRequestDto;
+import com.PowerUpFullStack.ms_cart.application.dto.request.OperationTypeRequestDto;
+import com.PowerUpFullStack.ms_cart.application.dto.request.SortDirectionRequestDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.CartResponseDto;
+import com.PowerUpFullStack.ms_cart.application.dto.response.PaginationResponseDto;
 import com.PowerUpFullStack.ms_cart.application.handler.ICartHandler;
 import com.PowerUpFullStack.ms_cart.application.mapper.ICartDetailsRequestMapper;
 import com.PowerUpFullStack.ms_cart.application.mapper.ICartRequestMapper;
@@ -21,7 +26,19 @@ public class CartHandlerImpl implements ICartHandler {
 
 
     @Override
-    public CartResponseDto addProductToCart(CartDetailsRequestDto cartRequest) {
-        return cartResponseMapper.toCartResponseDto(cartServicePort.addProductToCart(cartDetailsRequestMapper.toCartDetails(cartRequest)));
+    public void addProductToCart(AddProductToCartRequestDto addProductToCartRequestDto) {
+        cartServicePort.addProductToCart(
+                cartDetailsRequestMapper.toCartDetails(addProductToCartRequestDto.cartDetailsRequestDto()),
+                cartRequestMapper.toOperationType(addProductToCartRequestDto.operationTypeRequestDto()));
+    }
+
+    @Override
+    public void removeProductFromCart(long productId) {
+        cartServicePort.removeProductFromCart(productId);
+    }
+
+    @Override
+    public PaginationResponseDto<CartResponseDto> getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(SortDirectionRequestDto sortDirectionRequestDto, FilterByRequestDto filterByRequestDto) {
+        return null;
     }
 }

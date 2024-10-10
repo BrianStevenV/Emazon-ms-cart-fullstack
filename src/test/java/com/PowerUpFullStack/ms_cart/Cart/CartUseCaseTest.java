@@ -1,10 +1,14 @@
 package com.PowerUpFullStack.ms_cart.Cart;
 
-import com.PowerUpFullStack.ms_cart.domain.model.AmountStock;
+
+import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailsNotFoundException;
+import com.PowerUpFullStack.ms_cart.domain.exception.CartNotFoundException;
+import com.PowerUpFullStack.ms_cart.domain.exception.SupplyNextDateException;
+import com.PowerUpFullStack.ms_cart.domain.model.AllCategories;
 import com.PowerUpFullStack.ms_cart.domain.model.Available;
 import com.PowerUpFullStack.ms_cart.domain.model.Cart;
-import com.PowerUpFullStack.ms_cart.domain.model.CartComplete;
 import com.PowerUpFullStack.ms_cart.domain.model.CartDetails;
+import com.PowerUpFullStack.ms_cart.domain.model.OperationType;
 import com.PowerUpFullStack.ms_cart.domain.spi.ICartDetailsPersistencePort;
 import com.PowerUpFullStack.ms_cart.domain.spi.ICartPersistencePort;
 import com.PowerUpFullStack.ms_cart.domain.spi.IStockFeignClientPort;
@@ -16,147 +20,211 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
 
 
-import java.lang.reflect.Method;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
 public class CartUseCaseTest {
     @Mock
     private ICartPersistencePort cartPersistencePort;
-
     @Mock
     private ICartDetailsPersistencePort cartDetailsPersistencePort;
-
     @Mock
     private IStockFeignClientPort stockFeignClientPort;
-
     @Mock
     private ISuppliesFeignClientPort suppliesFeignClientPort;
-
     @Mock
     private CartUseCaseUtils cartUseCaseUtils;
 
-    @InjectMocks
     private CartUseCase cartUseCase;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        cartUseCase = new CartUseCase(
+                cartPersistencePort,
+                cartDetailsPersistencePort,
+                stockFeignClientPort,
+                suppliesFeignClientPort,
+                cartUseCaseUtils
+        );
     }
 
     @Test
-    void addProductToCart_createsNewCartWithProduct() {
+    void addProductToCart_NewCart_Success() {
+        // Arrange
+        long userId = 1L;
         CartDetails cartDetails = new CartDetails();
         cartDetails.setProductId(1L);
         cartDetails.setAmount(2);
 
-        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(1L);
-        when(cartPersistencePort.findCartByUserId(1L)).thenReturn(List.of());
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(new Cart()));
         when(stockFeignClientPort.amountStockAvailable(any())).thenReturn(new Available(true));
-        when(cartPersistencePort.findById(1L)).thenReturn(Optional.of(new Cart()));
 
-        Cart result = cartUseCase.addProductToCart(cartDetails);
+        // Act
+        cartUseCase.addProductToCart(cartDetails, OperationType.ADD);
 
-        assertNotNull(result);
+        // Assert
         verify(cartPersistencePort).saveCart(any(Cart.class));
         verify(cartDetailsPersistencePort).saveCartDetails(any(CartDetails.class));
     }
 
+    @Test
+    void addProductToCart_ExistingCart_NewProduct_Success() {
+        // Arrange
+        long userId = 1L;
+        long cartId = 1L;
+        long productId = 1L;
+        CartDetails cartDetails = new CartDetails();
+        cartDetails.setProductId(productId);
+        cartDetails.setAmount(2);
 
+        Cart existingCart = new Cart();
+        existingCart.setId(cartId);
+
+        List<CartDetails> existingProducts = Arrays.asList(
+                new CartDetails(2L, 5, LocalDateTime.now(), LocalDateTime.now(), true, productId, cartId)
+        );
+
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.of(existingCart));
+        when(cartDetailsPersistencePort.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.empty());
+        when(cartDetailsPersistencePort.findByCartIdListCartDetails(cartId)).thenReturn(existingProducts);
+        when(stockFeignClientPort.amountStockAvailable(any())).thenReturn(new Available(true));
+
+        Map<Long, List<Long>> categoriesMap = new HashMap<>();
+        categoriesMap.put(1L, Arrays.asList(1L, 2L));
+        categoriesMap.put(2L, Arrays.asList(3L));
+        AllCategories allCategories = new AllCategories(categoriesMap);
+        when(stockFeignClientPort.getCategoriesNames(any())).thenReturn(allCategories);
+
+        // Act
+        cartUseCase.addProductToCart(cartDetails, OperationType.ADD);
+
+        // Assert
+        verify(cartDetailsPersistencePort).saveCartDetails(argThat(cd ->
+                cd.getCartId() == cartId &&
+                        cd.getProductId() == productId &&
+                        cd.getAmount() == cartDetails.getAmount() &&
+                        cd.getActive()
+        ));
+        verify(cartPersistencePort).saveCart(existingCart);
+        verify(cartUseCaseUtils).setUpdateTimestamp(existingCart);
+        verify(cartUseCaseUtils).setCreationTimestamp(any(CartDetails.class));
+    }
 
     @Test
-    void addProductToCart_throwsExceptionWhenStockUnavailable() {
+    void addProductToCart_ExistingCart_ExistingProduct_Success() {
+        // Arrange
+        long userId = 1L;
+        long cartId = 1L;
         CartDetails cartDetails = new CartDetails();
         cartDetails.setProductId(1L);
         cartDetails.setAmount(2);
 
-        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(1L);
-        when(cartPersistencePort.findCartByUserId(1L)).thenReturn(List.of());
+        Cart existingCart = new Cart();
+        existingCart.setId(cartId);
+
+        CartDetails existingCartDetails = new CartDetails();
+        existingCartDetails.setProductId(1L);
+        existingCartDetails.setAmount(3);
+        existingCartDetails.setActive(true);
+
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.of(existingCart));
+        when(cartDetailsPersistencePort.findByCartIdAndProductId(cartId, 1L)).thenReturn(Optional.of(existingCartDetails));
+        when(stockFeignClientPort.amountStockAvailable(any())).thenReturn(new Available(true));
+
+        // Act
+        cartUseCase.addProductToCart(cartDetails, OperationType.ADD);
+
+        // Assert
+        verify(cartDetailsPersistencePort).saveCartDetails(existingCartDetails);
+        verify(cartPersistencePort).saveCart(existingCart);
+        assertEquals(5, existingCartDetails.getAmount());
+    }
+
+    @Test
+    void addProductToCart_StockNotAvailable_ThrowsException() {
+        // Arrange
+        long userId = 1L;
+        CartDetails cartDetails = new CartDetails();
+        cartDetails.setProductId(1L);
+        cartDetails.setAmount(2);
+
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.empty());
         when(stockFeignClientPort.amountStockAvailable(any())).thenReturn(new Available(false));
+        when(suppliesFeignClientPort.getNextDateSupply(anyLong())).thenReturn("2023-10-10");
 
-        assertThrows(IllegalStateException.class, () -> cartUseCase.addProductToCart(cartDetails));
+        // Act & Assert
+        assertThrows(SupplyNextDateException.class, () -> cartUseCase.addProductToCart(cartDetails, OperationType.ADD));
     }
-
-
-
 
 
     @Test
-    void testMapToCartComplete() throws Exception {
-        // Arrange
-        Object[] row = {1L, 2L, 3L, 5, Timestamp.valueOf("2024-09-27 10:00:00"), Timestamp.valueOf("2024-09-27 10:00:00"), true, 1L};
+    void removeProductFromCart_removesProductSuccessfully() {
+        long productId = 1L;
+        long userId = 1L;
+        Cart cart = new Cart();
+        cart.setId(1L);
+        CartDetails cartDetails = new CartDetails();
+        cartDetails.setProductId(productId);
+        cartDetails.setCartId(cart.getId());
 
-        // Act
-        Method method = CartUseCase.class.getDeclaredMethod("mapToCartComplete", Object[].class);
-        method.setAccessible(true);
-        CartComplete result = (CartComplete) method.invoke(cartUseCase, (Object) row);
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.of(cart));
+        when(cartDetailsPersistencePort.findByCartIdAndProductId(cart.getId(), productId)).thenReturn(Optional.of(cartDetails));
 
-        // Assert
-        assertEquals(1L, result.getCartId());
-        assertEquals(2L, result.getUserIdFromCart());
-        assertEquals(3L, result.getCartDetailId());
-        assertEquals(5, result.getAmount());
-        assertEquals(Timestamp.valueOf("2024-09-27 10:00:00"), result.getCreatedAt());
-        assertEquals(Timestamp.valueOf("2024-09-27 10:00:00"), result.getUpdatedAt());
-        assertTrue(result.getActive());
-        assertEquals(1L, result.getProductId());
+        cartUseCase.removeProductFromCart(productId);
+
+        verify(cartDetailsPersistencePort).deleteCartDetailsByCartIdAndProductId(cart.getId(), productId);
     }
 
     @Test
-    void testFindExistingProductInCart() throws Exception {
-        // Arrange
-        CartComplete cartComplete = new CartComplete();
-        cartComplete.setProductId(1L);
-        cartComplete.setAmount(2);
-        cartComplete.setCartDetailId(1L);
-        cartComplete.setActive(true);
-        cartComplete.setCreatedAt(Timestamp.valueOf("2024-09-27 10:00:00"));
-        cartComplete.setUpdatedAt(Timestamp.valueOf("2024-09-27 10:00:00"));
+    void removeProductFromCart_throwsCartNotFoundException() {
+        long productId = 1L;
+        long userId = 1L;
 
-        // Act
-        Method method = CartUseCase.class.getDeclaredMethod("findExistingProductInCart", List.class, Long.class);
-        method.setAccessible(true);
-        Optional<CartDetails> result = (Optional<CartDetails>) method.invoke(cartUseCase, Arrays.asList(cartComplete), 1L);
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.empty());
 
-        // Assert
-        assertTrue(result.isPresent());
-        assertEquals(1L, result.get().getProductId());
-        assertEquals(2, result.get().getAmount());
+        assertThrows(CartNotFoundException.class, () -> cartUseCase.removeProductFromCart(productId));
     }
 
     @Test
-    void testFindExistingProductInCart_NotFound() throws Exception {
-        // Arrange
-        CartComplete cartComplete = new CartComplete();
-        cartComplete.setProductId(1L);
-        cartComplete.setAmount(2);
-        cartComplete.setCartDetailId(1L);
-        cartComplete.setActive(true);
-        cartComplete.setCreatedAt(Timestamp.valueOf("2024-09-27 10:00:00"));
-        cartComplete.setUpdatedAt(Timestamp.valueOf("2024-09-27 10:00:00"));
+    void removeProductFromCart_throwsCartDetailsNotFoundException() {
+        long productId = 1L;
+        long userId = 1L;
+        Cart cart = new Cart();
+        cart.setId(1L);
 
-        // Act
-        Method method = CartUseCase.class.getDeclaredMethod("findExistingProductInCart", List.class, Long.class);
-        method.setAccessible(true);
-        Optional<CartDetails> result = (Optional<CartDetails>) method.invoke(cartUseCase, Collections.singletonList(cartComplete), 2L);
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.of(cart));
+        when(cartDetailsPersistencePort.findByCartIdAndProductId(cart.getId(), productId)).thenReturn(Optional.empty());
 
-        // Assert
-        assertFalse(result.isPresent());
+        assertThrows(CartDetailsNotFoundException.class, () -> cartUseCase.removeProductFromCart(productId));
     }
-
 
 }

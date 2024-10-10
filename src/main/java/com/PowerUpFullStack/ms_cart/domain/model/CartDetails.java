@@ -9,39 +9,74 @@ public class CartDetails {
     private LocalDateTime updatedAt;
     private Boolean active; // Cambiado a 'active'
     private Long productId;
-    private Cart cart;
+    private Long cartId;
 
-    public CartDetails(Long id, Integer amount, LocalDateTime createdAt, LocalDateTime updatedAt, Boolean active, Long productId, Cart cart) {
+    public CartDetails(Long id, Integer amount, LocalDateTime createdAt, LocalDateTime updatedAt, Boolean active, Long productId, Long cartId) {
         this.id = id;
         this.amount = amount;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.active = active;
         this.productId = productId;
-        this.cart = cart;
+        this.cartId = cartId;
     }
 
-    public CartDetails() {}
+    public CartDetails() {
+    }
 
-    // Getters y setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Integer getAmount() { return amount; }
-    public void setAmount(Integer amount) { this.amount = amount; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Integer getAmount() {
+        return amount;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setAmount(Integer amount) {
+        this.amount = amount;
+    }
 
-    public Boolean getActive() { return active; }  // Cambiado a 'getActive'
-    public void setActive(Boolean active) { this.active = active; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
-    public Cart getCart() { return cart; }
-    public void setCart(Cart cartId) { this.cart= cartId; }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public Long getCartId() {
+        return cartId;
+    }
+
+    public void setCartId(Long cartId) {
+        this.cartId = cartId;
+    }
 }

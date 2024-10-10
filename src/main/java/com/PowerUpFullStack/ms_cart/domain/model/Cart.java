@@ -1,23 +1,27 @@
 package com.PowerUpFullStack.ms_cart.domain.model;
 
+
+import java.time.LocalDateTime;
 import java.util.List;
+
 
 public class Cart {
     private Long id;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private Long userId;
     private List<CartDetails> cartDetails;
 
-    public Cart(Long id, Long userId, List<CartDetails> cartDetails) {
+    public Cart(Long id, LocalDateTime createdAt, LocalDateTime updatedAt, Long userId, List<CartDetails> cartDetails) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.userId = userId;
         this.cartDetails = cartDetails;
     }
 
-    public Cart(Long id){
-        this.id = id;
+    public Cart() {
     }
-
-    public Cart() {}
 
     public Long getId() {
         return id;
@@ -25,6 +29,22 @@ public class Cart {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public Long getUserId() {

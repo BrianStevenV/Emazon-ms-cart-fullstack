@@ -7,7 +7,6 @@ import com.PowerUpFullStack.ms_cart.application.dto.response.AmountStockAvailabl
 import com.PowerUpFullStack.ms_cart.application.dto.response.ProductCategoryResponseDto;
 import com.PowerUpFullStack.ms_cart.infrastructure.configuration.feign.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;

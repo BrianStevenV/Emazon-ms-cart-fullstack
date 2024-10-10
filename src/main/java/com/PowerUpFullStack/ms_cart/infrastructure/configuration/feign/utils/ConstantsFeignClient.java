@@ -18,6 +18,6 @@ public class ConstantsFeignClient {
 
     public static final String SUPPLY_SERVICE = "supply-service";
     public static final String SUPPLY_BASE_HOST = "http://localhost:8083";
-    public static final String SUPPLY_GET_NEXT_DATE_SUPPLY = "/next-date-supply/{productId}";
+    public static final String SUPPLY_GET_NEXT_DATE_SUPPLY = "/api/v1/supplies/next-date-supply/{productId}";
     public static final String SUPPLY_GET_NEXT_DATE_SUPPLY_PATH_VARIABLE_PRODUCT_ID = "productId";
 }

@@ -1,6 +1,7 @@
 package com.PowerUpFullStack.ms_cart.infrastructure.security.jwt.utils;
 
 import com.PowerUpFullStack.ms_cart.infrastructure.security.jwt.JwtConfig;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Component;
 
@@ -20,14 +21,11 @@ public class JwtMethodUtils {
 
     private static JwtConfig jwtConfig;
 
+
     public static List<String> getRoleFromToken(String token){
-        System.out.println("getidformrole");
-        String secret = jwtConfig.getSecret();
-        System.out.println(secret);
-        return (List<String>) Jwts.parserBuilder()
-                .setSigningKey(secret.getBytes())
-                .build().parseClaimsJws(token)
-                .getBody().get(ROLES_CLAIM_JWT, List.class);
+        Claims claims = Jwts.parserBuilder().setSigningKey(jwtConfig.getSecret().getBytes()).build().parseClaimsJws(token).getBody();
+        return (List<String>) claims.get(ROLES_CLAIM_JWT);
+
     }
 
     public static long getIdFromToken(String token) {

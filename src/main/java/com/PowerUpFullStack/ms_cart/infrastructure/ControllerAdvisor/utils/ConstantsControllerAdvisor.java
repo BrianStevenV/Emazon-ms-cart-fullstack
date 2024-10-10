@@ -6,7 +6,10 @@ public class ConstantsControllerAdvisor {
         throw new IllegalStateException("Utility class");
     }
 
-
+    public static final String OPERATION_TYPE_NOT_PERMISSION_EXCEPTION_MESSAGE = "Operation type not allowed";
+    public static final String PRODUCT_NOT_FOUND_IN_DATABASE_EXCEPTION_MESSAGE = "Product not found in cart";
+    public static final String OBJECT_METHOD_UPDATE_TIMESTAMP_EXCEPTION_MESSAGE = "The provided object does not have setUpdatedAt method";
+    public static final String OBJECT_HAS_NOT_METHOD_EXCEPTION_MESSAGE = "The provided object does not have setCreatedAt or setUpdatedAt methods";
     public static final String CART_NOT_FOUND_EXCEPTION_MESSAGE = "Cart not found";
     public static final String PRODUCT_CATEGORY_INVALID_EXCEPTION_MESSAGE = "Product category invalid, There are more than 3 repeated categories in the cart";
 

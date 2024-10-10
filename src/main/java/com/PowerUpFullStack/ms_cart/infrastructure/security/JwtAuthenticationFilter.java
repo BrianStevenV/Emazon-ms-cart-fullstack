@@ -11,6 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.PowerUpFullStack.ms_cart.infrastructure.security.jwt.utils.JwtMethodUtils.getIdFromToken;
@@ -33,11 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             System.out.println(token);
             if(token != null){
 
-                System.out.println("ignresa al if");
-                System.out.println(getRoleFromToken(token));
-                List<String> hl = getRoleFromToken(token);
-                System.out.println("Froooom" + getIdFromToken(token));
-                System.out.println(hl);
                 Authentication authentication = new JwtAuthenticationToken(token, getRoleFromToken(token), getIdFromToken(token));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

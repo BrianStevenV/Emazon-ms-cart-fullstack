@@ -14,6 +14,10 @@ public class OpenApiConstants {
     public static final String SUMMARY_CREATE_CART = "Add new product to cart";
     public static final String DESCRIPTION_CREATE_CART_201 = "Product added to cart";
     public static final String DESCRIPTION_CREATE_CART_409 = "Product already exists in cart";
+
+    public static final String SUMMARY_REMOVE_CART = "Remove product from cart";
+    public static final String DESCRIPTION_REMOVE_CART_201 = "Product removed from cart";
+    public static final String DESCRIPTION_REMOVE_CART_409 = "Product not found in cart";
     // Content
 
     public static final String APPLICATION_JSON = "application/json";
@@ -29,8 +33,8 @@ public class OpenApiConstants {
 
     // Swagger
 
-    public static final String SWAGGER_TITLE_MESSAGE = "User API Pragma Power Up Full Stack";
-    public static final String SWAGGER_DESCRIPTION_MESSAGE = "User microservice";
+    public static final String SWAGGER_TITLE_MESSAGE = "Cart API Pragma Power Up Full Stack";
+    public static final String SWAGGER_DESCRIPTION_MESSAGE = "Cart microservice";
     public static final String SWAGGER_VERSION_MESSAGE = "1.0.0";
     public static final String SWAGGER_LICENSE_NAME_MESSAGE = "Apache 2.0";
     public static final String SWAGGER_LICENSE_URL_MESSAGE = "http://springdoc.org";

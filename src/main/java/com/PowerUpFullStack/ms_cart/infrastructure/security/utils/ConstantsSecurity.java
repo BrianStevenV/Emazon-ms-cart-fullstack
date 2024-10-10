@@ -10,6 +10,7 @@ public class ConstantsSecurity {
     // Cart Controller
 
     public static final String CART_CONTROLLER_POST_ADD_PRODUCT_CART = "/cart/add";
+    public static final String CART_CONTROLLER_POST_REMOVE_PRODUCT_CART = "/cart/remove";
     //Swagger
 
     public static final String SWAGGER_UI_HTML = "/swagger-ui.html";

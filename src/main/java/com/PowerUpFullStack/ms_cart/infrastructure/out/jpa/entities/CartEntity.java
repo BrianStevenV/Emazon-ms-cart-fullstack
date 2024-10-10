@@ -15,8 +15,11 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities.utils.ConstantsEntity.CART_COLUMN_CREATED_AT;
+import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities.utils.ConstantsEntity.CART_COLUMN_UPDATED_AT;
 import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities.utils.ConstantsEntity.CART_COLUMN_USER_ID;
 import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities.utils.ConstantsEntity.CART_DETAILS_ONE_TO_MANY_MAPPED_BY;
 import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities.utils.ConstantsEntity.CART_TABLE_NAME;
@@ -30,6 +33,12 @@ public class CartEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = CART_COLUMN_CREATED_AT, nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = CART_COLUMN_UPDATED_AT, nullable = false)
+    private LocalDateTime updatedAt;
 
     @Column(name = CART_COLUMN_USER_ID, nullable = false)
     private Long userId;
