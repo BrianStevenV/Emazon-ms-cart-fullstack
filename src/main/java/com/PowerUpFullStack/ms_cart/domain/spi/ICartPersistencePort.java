@@ -9,5 +9,4 @@ import java.util.Optional;
 public interface ICartPersistencePort {
     void saveCart(Cart cart);
     Optional<Cart> findCartEntity(long userId);
-    CustomPage<Cart> getPaginationCart();
 }

@@ -1,14 +1,20 @@
 package com.PowerUpFullStack.ms_cart.Cart;
 
 
+import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailNotAvailableInCartException;
 import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailsNotFoundException;
 import com.PowerUpFullStack.ms_cart.domain.exception.CartNotFoundException;
 import com.PowerUpFullStack.ms_cart.domain.exception.SupplyNextDateException;
 import com.PowerUpFullStack.ms_cart.domain.model.AllCategories;
 import com.PowerUpFullStack.ms_cart.domain.model.Available;
 import com.PowerUpFullStack.ms_cart.domain.model.Cart;
+import com.PowerUpFullStack.ms_cart.domain.model.CartDetailAndProduct;
 import com.PowerUpFullStack.ms_cart.domain.model.CartDetails;
+import com.PowerUpFullStack.ms_cart.domain.model.CustomPage;
+import com.PowerUpFullStack.ms_cart.domain.model.FilterBy;
 import com.PowerUpFullStack.ms_cart.domain.model.OperationType;
+import com.PowerUpFullStack.ms_cart.domain.model.Product;
+import com.PowerUpFullStack.ms_cart.domain.model.SortDirection;
 import com.PowerUpFullStack.ms_cart.domain.spi.ICartDetailsPersistencePort;
 import com.PowerUpFullStack.ms_cart.domain.spi.ICartPersistencePort;
 import com.PowerUpFullStack.ms_cart.domain.spi.IStockFeignClientPort;
@@ -225,6 +231,42 @@ public class CartUseCaseTest {
         when(cartDetailsPersistencePort.findByCartIdAndProductId(cart.getId(), productId)).thenReturn(Optional.empty());
 
         assertThrows(CartDetailsNotFoundException.class, () -> cartUseCase.removeProductFromCart(productId));
+    }
+
+    @Test
+    void getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName_throwsCartNotFoundException() {
+        long userId = 1L;
+        SortDirection sortDirection = SortDirection.ASC;
+        FilterBy filterBy = FilterBy.PRODUCT;
+
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.empty());
+
+        assertThrows(CartNotFoundException.class, () -> cartUseCase.getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(sortDirection, filterBy));
+    }
+
+    @Test
+    void getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName_throwsCartDetailNotAvailableInCartException() {
+        long userId = 1L;
+        long cartId = 1L;
+        SortDirection sortDirection = SortDirection.ASC;
+        FilterBy filterBy = FilterBy.PRODUCT;
+
+        Cart cart = new Cart();
+        cart.setId(cartId);
+
+        CartDetails cartDetails = new CartDetails();
+        cartDetails.setProductId(1L);
+        cartDetails.setAmount(2);
+        cartDetails.setActive(false);
+
+        CustomPage<CartDetails> cartDetailsPage = new CustomPage<>(List.of(cartDetails), 0, 10, 1, 1, true, true);
+
+        when(cartUseCaseUtils.getIdFromAuthContext()).thenReturn(userId);
+        when(cartPersistencePort.findCartEntity(userId)).thenReturn(Optional.of(cart));
+        when(cartDetailsPersistencePort.getPaginationCartDetails(cartId)).thenReturn(cartDetailsPage);
+
+        assertThrows(CartDetailNotAvailableInCartException.class, () -> cartUseCase.getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(sortDirection, filterBy));
     }
 
 }

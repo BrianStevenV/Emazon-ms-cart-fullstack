@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.PowerUpFullStack.ms_cart.infrastructure.security.utils.ConstantsSecurity.CART_CONTROLLER_GET_PAGINATION_CART;
 import static com.PowerUpFullStack.ms_cart.infrastructure.security.utils.ConstantsSecurity.CART_CONTROLLER_POST_ADD_PRODUCT_CART;
 import static com.PowerUpFullStack.ms_cart.infrastructure.security.utils.ConstantsSecurity.CART_CONTROLLER_POST_REMOVE_PRODUCT_CART;
 import static com.PowerUpFullStack.ms_cart.infrastructure.security.utils.ConstantsSecurity.CUSTOMER_ROLE;
@@ -44,6 +45,7 @@ public class WebSecurity {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(SWAGGER_UI_HTML, SWAGGER_UI, V3_API_DOCS).permitAll()
                         .requestMatchers(HttpMethod.POST, CART_CONTROLLER_POST_ADD_PRODUCT_CART, CART_CONTROLLER_POST_REMOVE_PRODUCT_CART).hasAuthority(CUSTOMER_ROLE)
+                        .requestMatchers(HttpMethod.GET, CART_CONTROLLER_GET_PAGINATION_CART).hasAuthority(CUSTOMER_ROLE)
                         .anyRequest().authenticated()
 
                 )

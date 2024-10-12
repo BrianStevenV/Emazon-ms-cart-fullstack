@@ -1,5 +1,6 @@
 package com.PowerUpFullStack.ms_cart.infrastructure.ControllerAdvisor;
 
+import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailNotAvailableInCartException;
 import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailsNotFoundException;
 import com.PowerUpFullStack.ms_cart.domain.exception.CartNotFoundException;
 import com.PowerUpFullStack.ms_cart.domain.exception.ObjectHasNotMethodException;
@@ -99,6 +100,12 @@ public class CartControllerAdvisor {
     public ResponseEntity<Map<String, String>> handleOperationTypeNotPermissionException(OperationTypeNotPermissionException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Collections.singletonMap(RESPONSE_ERROR_MESSAGE, OPERATION_TYPE_NOT_PERMISSION_EXCEPTION_MESSAGE));
+    }
+
+    @ExceptionHandler(CartDetailNotAvailableInCartException.class)
+    public ResponseEntity<Map<String, String>> handleCartDetailNotAvailableInCartException(CartDetailNotAvailableInCartException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Collections.singletonMap(RESPONSE_ERROR_MESSAGE, ex.getMessage()));
     }
 
 }

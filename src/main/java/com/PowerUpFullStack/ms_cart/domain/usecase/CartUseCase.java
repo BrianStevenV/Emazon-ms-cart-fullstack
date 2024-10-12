@@ -1,5 +1,6 @@
 package com.PowerUpFullStack.ms_cart.domain.usecase;
 
+import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailNotAvailableInCartException;
 import com.PowerUpFullStack.ms_cart.domain.exception.CartDetailsNotFoundException;
 import com.PowerUpFullStack.ms_cart.domain.exception.CartNotFoundException;
 import com.PowerUpFullStack.ms_cart.domain.exception.OperationTypeNotPermissionException;
@@ -10,10 +11,12 @@ import com.PowerUpFullStack.ms_cart.domain.model.AmountStock;
 import com.PowerUpFullStack.ms_cart.domain.model.Available;
 import com.PowerUpFullStack.ms_cart.domain.model.Cart;
 import com.PowerUpFullStack.ms_cart.domain.api.ICartServicePort;
+import com.PowerUpFullStack.ms_cart.domain.model.CartDetailAndProduct;
 import com.PowerUpFullStack.ms_cart.domain.model.CartDetails;
 import com.PowerUpFullStack.ms_cart.domain.model.CustomPage;
 import com.PowerUpFullStack.ms_cart.domain.model.FilterBy;
 import com.PowerUpFullStack.ms_cart.domain.model.OperationType;
+import com.PowerUpFullStack.ms_cart.domain.model.Product;
 import com.PowerUpFullStack.ms_cart.domain.model.ProductIds;
 import com.PowerUpFullStack.ms_cart.domain.model.SortDirection;
 import com.PowerUpFullStack.ms_cart.domain.spi.ICartDetailsPersistencePort;
@@ -24,11 +27,18 @@ import com.PowerUpFullStack.ms_cart.domain.usecase.utils.CartUseCaseUtils;
 
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.PowerUpFullStack.ms_cart.domain.usecase.utils.CartUseCaseUtils.buildSupplyMessage;
+import static com.PowerUpFullStack.ms_cart.domain.usecase.utils.CartUseCaseUtils.sortCartDetails;
 import static com.PowerUpFullStack.ms_cart.domain.usecase.utils.ConstantsCartUseCase.MAX_INT_CATEGORY;
 import static com.PowerUpFullStack.ms_cart.domain.usecase.utils.ConstantsCartUseCase.MIN_AMOUNT_TOTAL;
+import static com.PowerUpFullStack.ms_cart.infrastructure.ControllerAdvisor.utils.ConstantsControllerAdvisor.PRODUCT_NOT_AVAILABLE_IN_CART_EXCEPTION_MESSAGE;
 
 
 public class CartUseCase implements ICartServicePort {
@@ -181,12 +191,128 @@ public class CartUseCase implements ICartServicePort {
     }
 
 
+
     @Override
-    public CustomPage<Cart> getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(SortDirection
-                                                                                                              sortDirection,
-                                                                                                  FilterBy filterBy) {
-        return null;
+    public CustomPage<CartDetailAndProduct> getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(SortDirection sortDirection, FilterBy filterBy) {
+
+        CustomPage<CartDetails> cartDetailsPagination = cartDetailsPersistencePort.getPaginationCartDetails(
+                cartPersistencePort.findCartEntity(cartUseCaseUtils.getIdFromAuthContext())
+                        .orElseThrow(CartNotFoundException::new).getId()
+        );
+
+        List<Product> productsList = stockFeignClientPort.getProductsByProductsIds(new ProductIds(
+                cartDetailsPagination.getContent().stream().map(CartDetails::getProductId).collect(Collectors.toList())));
+
+        // Crea un mapa de productos para acceso rápido, mejora eficiencia de busqueda
+        //Reduce complejidad de cada busqueda O(1), en lugar de .stream() .filter() de O(N) en cada iteracion
+        Map<Long, Product> productMap = productsList.stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+
+        AtomicReference<Double> subtotal = new AtomicReference<>(0.0);
+
+        List<CartDetailAndProduct> newContent = cartDetailsPagination.getContent().stream()
+                .map(cartDetails -> createCartDetailAndProduct(cartDetails, productMap, subtotal))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return createCustomPageResponse(newContent, subtotal.get(), cartDetailsPagination, sortDirection, filterBy);
     }
+
+    private CartDetailAndProduct createCartDetailAndProduct(CartDetails cartDetails, Map<Long, Product> productMap, AtomicReference<Double> subtotal) {
+        Product product = productMap.get(cartDetails.getProductId());
+        if (product == null || !cartDetails.getActive()) {
+            throw new CartDetailNotAvailableInCartException(PRODUCT_NOT_AVAILABLE_IN_CART_EXCEPTION_MESSAGE + cartDetails.getProductId());
+        }
+
+        if (product.getAmount() - cartDetails.getAmount() <= 0) {
+            String nextSupplyDate = suppliesFeignClientPort.getNextDateSupply(cartDetails.getProductId());
+            return new CartDetailAndProduct(buildSupplyMessage(product, cartDetails.getAmount(), nextSupplyDate));
+        }
+
+        CartDetailAndProduct cartDetailAndProduct = new CartDetailAndProduct(
+                product.getId(),
+                product.getName(),
+                product.getAmount(),
+                product.getPrice(),
+                cartDetails.getAmount(),
+                product.getBrandName(),
+                product.getCategoryNames(),
+                cartDetails.getId()
+        );
+
+        subtotal.updateAndGet(v -> v + (product.getPrice() * cartDetails.getAmount()));
+        return cartDetailAndProduct;
+    }
+
+    private CustomPage<CartDetailAndProduct> createCustomPageResponse(List<CartDetailAndProduct> newContent, double subtotal, CustomPage<CartDetails> cartDetailsPagination, SortDirection sortDirection, FilterBy filterBy) {
+        List<CartDetailAndProduct> sortedContent = sortCartDetails(newContent, sortDirection, filterBy);
+        return new CustomPage<>(sortedContent, subtotal, cartDetailsPagination.getPageNumber(), cartDetailsPagination.getPageSize(),
+                cartDetailsPagination.getTotalElements(), cartDetailsPagination.getTotalPages(),
+                cartDetailsPagination.isFirst(), cartDetailsPagination.isLast());
+    }
+
+
+
+//    @Override
+//    public CustomPage<CartDetailAndProduct> getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(SortDirection
+//                                                                                                              sortDirection,
+//                                                                                                  FilterBy filterBy) {
+//
+//
+//
+//        CustomPage<CartDetails> cartDetailsPagination = cartDetailsPersistencePort.getPaginationCartDetails(
+//                cartPersistencePort.findCartEntity(cartUseCaseUtils.getIdFromAuthContext())
+//                        .map(Cart::getId)
+//                        .orElseThrow(CartNotFoundException::new)
+//        );
+//
+//        List<Product> productsList = stockFeignClientPort.getProductsByProductsIds(new ProductIds(cartDetailsPagination.getContent().stream().map(CartDetails::getProductId).collect(Collectors.toList())));
+//
+//        AtomicReference<Double> subtotal = new AtomicReference<>(0.0);
+//
+//        List<CartDetailAndProduct> newContent = cartDetailsPagination.getContent().stream().map(cartDetails ->
+//                productsList.stream()
+//                        .filter(product -> product.getId() == cartDetails.getProductId() && cartDetails.getActive())
+//                        .findFirst()
+//                        .map(product -> {
+//
+//
+//                            if (product.getAmount() - cartDetails.getAmount() <= 0) {
+//                                String nextSupplyDate = suppliesFeignClientPort.getNextDateSupply(cartDetails.getProductId());
+//                                return new CartDetailAndProduct(buildSupplyMessage(product, cartDetails.getAmount(), nextSupplyDate));
+//                            }
+//
+//                            CartDetailAndProduct cartDetailAndProduct = new CartDetailAndProduct(
+//                                    product.getId(),
+//                                    product.getName(),
+//                                    product.getAmount(),
+//                                    product.getPrice(),
+//                                    cartDetails.getAmount(),
+//                                    product.getBrandName(),
+//                                    product.getCategoryNames(),
+//                                    cartDetails.getId()
+//                            );
+//
+//                            subtotal.updateAndGet(v -> v + (product.getPrice() * cartDetails.getAmount()));
+//                            return cartDetailAndProduct;
+//                        })
+//                        .orElse(null))
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList());
+//
+//
+//        CustomPage<CartDetailAndProduct> response = new CustomPage<>(
+//                sortCartDetails(newContent, sortDirection, filterBy),
+//                subtotal.get(),
+//                cartDetailsPagination.getPageNumber(),
+//                cartDetailsPagination.getPageSize(),
+//                cartDetailsPagination.getTotalElements(),
+//                cartDetailsPagination.getTotalPages(),
+//                cartDetailsPagination.isFirst(),
+//                cartDetailsPagination.isLast()
+//        );
+//        return response;
+//    }
 
     public void addNewProduct(CartDetails product, long cartId){
         cartUseCaseUtils.setCreationTimestamp(product);

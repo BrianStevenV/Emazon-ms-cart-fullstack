@@ -4,6 +4,7 @@ import java.util.List;
 
 public class CustomPage<T> {
     private List<T> content;
+    private double subtotal;
     private int pageNumber;
     private int pageSize;
     private long totalElements;
@@ -21,12 +22,31 @@ public class CustomPage<T> {
         this.isLast = isLast;
     }
 
+    public CustomPage(List<T> content, double subtotal, int pageNumber, int pageSize, long totalElements, int totalPages, boolean isFirst, boolean isLast) {
+        this.content = content;
+        this.subtotal = subtotal;
+        this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
+        this.totalElements = totalElements;
+        this.totalPages = totalPages;
+        this.isFirst = isFirst;
+        this.isLast = isLast;
+    }
+
     public List<T> getContent() {
         return content;
     }
 
     public void setContent(List<T> content) {
         this.content = content;
+    }
+
+    public double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
     }
 
     public int getPageNumber() {

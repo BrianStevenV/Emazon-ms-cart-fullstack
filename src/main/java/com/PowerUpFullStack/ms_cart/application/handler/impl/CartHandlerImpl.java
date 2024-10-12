@@ -7,6 +7,7 @@ import com.PowerUpFullStack.ms_cart.application.dto.request.OperationTypeRequest
 import com.PowerUpFullStack.ms_cart.application.dto.request.SortDirectionRequestDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.CartResponseDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.PaginationResponseDto;
+import com.PowerUpFullStack.ms_cart.application.dto.response.ProductResponseDto;
 import com.PowerUpFullStack.ms_cart.application.handler.ICartHandler;
 import com.PowerUpFullStack.ms_cart.application.mapper.ICartDetailsRequestMapper;
 import com.PowerUpFullStack.ms_cart.application.mapper.ICartRequestMapper;
@@ -21,7 +22,6 @@ public class CartHandlerImpl implements ICartHandler {
     private final ICartServicePort cartServicePort;
     private final ICartRequestMapper cartRequestMapper;
     private final ICartResponseMapper cartResponseMapper;
-
     private final ICartDetailsRequestMapper cartDetailsRequestMapper;
 
 
@@ -38,7 +38,10 @@ public class CartHandlerImpl implements ICartHandler {
     }
 
     @Override
-    public PaginationResponseDto<CartResponseDto> getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(SortDirectionRequestDto sortDirectionRequestDto, FilterByRequestDto filterByRequestDto) {
-        return null;
+    public PaginationResponseDto<ProductResponseDto> getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(SortDirectionRequestDto sortDirectionRequestDto, FilterByRequestDto filterByRequestDto) {
+        return cartResponseMapper.toPaginationResponseDtoFromProductResponseDto(
+                cartServicePort.getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(
+                        cartRequestMapper.toSortDirection(sortDirectionRequestDto),
+                        cartRequestMapper.toFilterBy(filterByRequestDto)));
     }
 }

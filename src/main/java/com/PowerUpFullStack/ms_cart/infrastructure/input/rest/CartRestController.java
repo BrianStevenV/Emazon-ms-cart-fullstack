@@ -3,8 +3,8 @@ package com.PowerUpFullStack.ms_cart.infrastructure.input.rest;
 import com.PowerUpFullStack.ms_cart.application.dto.request.AddProductToCartRequestDto;
 import com.PowerUpFullStack.ms_cart.application.dto.request.FilterByRequestDto;
 import com.PowerUpFullStack.ms_cart.application.dto.request.SortDirectionRequestDto;
-import com.PowerUpFullStack.ms_cart.application.dto.response.CartResponseDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.PaginationResponseDto;
+import com.PowerUpFullStack.ms_cart.application.dto.response.ProductResponseDto;
 import com.PowerUpFullStack.ms_cart.application.handler.ICartHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,12 +28,15 @@ import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiC
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.CODE_409;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.DESCRIPTION_CREATE_CART_201;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.DESCRIPTION_CREATE_CART_409;
+import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.DESCRIPTION_GET_PAGINATION_CART_200;
+import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.DESCRIPTION_GET_PAGINATION_CART_404;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.DESCRIPTION_REMOVE_CART_201;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.DESCRIPTION_REMOVE_CART_409;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.SCHEMAS_ERROR;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.SCHEMAS_MAP;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.SECURITY_REQUIREMENT;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.SUMMARY_CREATE_CART;
+import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.SUMMARY_GET_PAGINATION_CART;
 import static com.PowerUpFullStack.ms_cart.infrastructure.documentation.OpenApiConstants.SUMMARY_REMOVE_CART;
 import static com.PowerUpFullStack.ms_cart.infrastructure.input.rest.ConstantsCartController.CART_REST_CONTROLLER_BASE_PATH;
 import static com.PowerUpFullStack.ms_cart.infrastructure.input.rest.ConstantsCartController.CART_REST_CONTROLLER_GET_PAGINATION_CART;
@@ -61,11 +64,11 @@ public class CartRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     };
 
-    @Operation(summary = SUMMARY_REMOVE_CART,
+    @Operation(summary = SUMMARY_GET_PAGINATION_CART,
             responses = {
-                    @ApiResponse(responseCode = CODE_201, description = DESCRIPTION_REMOVE_CART_201,
+                    @ApiResponse(responseCode = CODE_201, description = DESCRIPTION_GET_PAGINATION_CART_200,
                             content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(ref = SCHEMAS_MAP))),
-                    @ApiResponse(responseCode = CODE_409, description = DESCRIPTION_REMOVE_CART_409,
+                    @ApiResponse(responseCode = CODE_409, description = DESCRIPTION_GET_PAGINATION_CART_404,
                             content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(ref = SCHEMAS_ERROR)))})
     @PostMapping(CART_REST_CONTROLLER_POST_REMOVE_PRODUCT_TO_CART)
     @SecurityRequirement(name = SECURITY_REQUIREMENT)
@@ -74,12 +77,19 @@ public class CartRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = SUMMARY_REMOVE_CART,
+            responses = {
+                    @ApiResponse(responseCode = CODE_201, description = DESCRIPTION_REMOVE_CART_201,
+                            content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(ref = SCHEMAS_MAP))),
+                    @ApiResponse(responseCode = CODE_409, description = DESCRIPTION_REMOVE_CART_409,
+                            content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(ref = SCHEMAS_ERROR)))})
     @GetMapping(CART_REST_CONTROLLER_GET_PAGINATION_CART)
-    public PaginationResponseDto<CartResponseDto> getPaginationCartByAscAndDescByNameProduct(@Valid
+    @SecurityRequirement(name = SECURITY_REQUIREMENT)
+    public PaginationResponseDto<ProductResponseDto> getPaginationCartByAscAndDescByNameProduct(@Valid
                                                                                              @RequestParam(defaultValue = "ASC")
                                                                                              SortDirectionRequestDto
                                                                                                          sortDirectionRequestDto,
-                                                                                             @RequestParam(defaultValue = "PRODUCT")
+                                                                                                @RequestParam(defaultValue = "PRODUCT")
                                                                                              FilterByRequestDto
                                                                                                      filterByRequestDto){
         return cartHandler.getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName(sortDirectionRequestDto, filterByRequestDto);

@@ -13,7 +13,6 @@ import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.repositories.u
 
 @Repository
 public interface ICartRepository extends JpaRepository<CartEntity, Long> {
-//    @Query(value = "SELECT * FROM cart WHERE user_id = :userId", nativeQuery = true)
     @Query(value = QUERY_FIND_CART_ENTITY, nativeQuery = true)
     Optional<CartEntity> findCartEntity(@Param(PARAM_FIND_CART_ENTITY) long userId);
 

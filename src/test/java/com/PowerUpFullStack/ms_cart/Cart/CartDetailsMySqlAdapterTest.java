@@ -1,6 +1,7 @@
 package com.PowerUpFullStack.ms_cart.Cart;
 
 import com.PowerUpFullStack.ms_cart.domain.model.CartDetails;
+import com.PowerUpFullStack.ms_cart.domain.model.CustomPage;
 import com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.adapters.CartDetailsEntityMySqlAdapter;
 import com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.entities.CartDetailsEntity;
 import com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.mapper.ICartDetailsEntityMapper;
@@ -11,12 +12,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.adapters.utils.ConstantsJpaAdapters.PAGINATION_PAGE_NUMBER;
+import static com.PowerUpFullStack.ms_cart.infrastructure.out.jpa.adapters.utils.ConstantsJpaAdapters.PAGINATION_PAGE_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -107,5 +116,34 @@ public class CartDetailsMySqlAdapterTest {
         cartDetailsEntityMySqlAdapter.enableCartDetailByCartIdAndProductId(cartId, productId);
 
         verify(cartDetailsRepository).enableCartDetailByCartIdAndProductId(cartId, productId);
+    }
+
+    @Test
+    void getPaginationCartDetails_returnsCustomPageSuccessfully() {
+        long cartId = 1L;
+        Pageable pageable = PageRequest.of(PAGINATION_PAGE_NUMBER, PAGINATION_PAGE_SIZE);
+        CartDetailsEntity cartDetailsEntity = new CartDetailsEntity();
+        Page<CartDetailsEntity> cartDetailsPage = new PageImpl<>(List.of(cartDetailsEntity), pageable, 1);
+
+        when(cartDetailsRepository.findAllByCartId(pageable, cartId)).thenReturn(cartDetailsPage);
+        when(cartDetailsEntityMapper.toCartDetails(cartDetailsEntity)).thenReturn(new CartDetails());
+
+        CustomPage<CartDetails> result = cartDetailsEntityMySqlAdapter.getPaginationCartDetails(cartId);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    void getPaginationCartDetails_returnsNullWhenPageIsEmpty() {
+        long cartId = 1L;
+        Pageable pageable = PageRequest.of(PAGINATION_PAGE_NUMBER, PAGINATION_PAGE_SIZE);
+        Page<CartDetailsEntity> cartDetailsPage = Page.empty(pageable);
+
+        when(cartDetailsRepository.findAllByCartId(pageable, cartId)).thenReturn(cartDetailsPage);
+
+        CustomPage<CartDetails> result = cartDetailsEntityMySqlAdapter.getPaginationCartDetails(cartId);
+
+        assertNull(result);
     }
 }

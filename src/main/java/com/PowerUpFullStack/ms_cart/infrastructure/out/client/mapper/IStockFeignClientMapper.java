@@ -5,13 +5,17 @@ import com.PowerUpFullStack.ms_cart.application.dto.request.ProductIdsFeignClien
 import com.PowerUpFullStack.ms_cart.application.dto.response.AllCategoriesResponseDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.AmountStockAvailableResponseDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.ProductCategoryResponseDto;
+import com.PowerUpFullStack.ms_cart.application.dto.response.ProductsResponseDto;
 import com.PowerUpFullStack.ms_cart.domain.model.AllCategories;
 import com.PowerUpFullStack.ms_cart.domain.model.AmountStock;
 import com.PowerUpFullStack.ms_cart.domain.model.Available;
+import com.PowerUpFullStack.ms_cart.domain.model.Product;
 import com.PowerUpFullStack.ms_cart.domain.model.ProductCategory;
 import com.PowerUpFullStack.ms_cart.domain.model.ProductIds;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -27,4 +31,8 @@ public interface IStockFeignClientMapper {
 
     ProductCategory toProductCategory(ProductCategoryResponseDto productCategoryResponseDto);
     Available toAvailable(AmountStockAvailableResponseDto amountStockAvailableResponseDto);
+
+    List<Product> toProductList(List<ProductsResponseDto> productsResponseDto);
+
+
 }

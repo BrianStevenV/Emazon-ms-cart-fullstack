@@ -12,6 +12,7 @@ public class ConstantsControllerAdvisor {
     public static final String OBJECT_HAS_NOT_METHOD_EXCEPTION_MESSAGE = "The provided object does not have setCreatedAt or setUpdatedAt methods";
     public static final String CART_NOT_FOUND_EXCEPTION_MESSAGE = "Cart not found";
     public static final String PRODUCT_CATEGORY_INVALID_EXCEPTION_MESSAGE = "Product category invalid, There are more than 3 repeated categories in the cart";
+    public static final String PRODUCT_NOT_AVAILABLE_IN_CART_EXCEPTION_MESSAGE = "Product not available in cart";
 
     // General Error
     public static final String RESPONSE_ERROR_MESSAGE = "Error:";

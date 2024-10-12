@@ -15,6 +15,7 @@ public class ConstantsFeignClient {
     public static final String STOCK_GET_PRODUCT_BY_ID_PATH_VARIABLE = "productId";
     public static final String STOCK_POST_CATEGORIES_BY_PRODUCTS_IDS = "/product/categories";
     public static final String STOCK_POST_AMOUNT_STOCK_AVAILABLE = "/product/stock/available";
+    public static final String STOCK_POST_PRODUCTS_BY_PRODUCTS_IDS = "/product/products";
 
     public static final String SUPPLY_SERVICE = "supply-service";
     public static final String SUPPLY_BASE_HOST = "http://localhost:8083";

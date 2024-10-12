@@ -7,13 +7,14 @@ import com.PowerUpFullStack.ms_cart.application.dto.request.OperationTypeRequest
 import com.PowerUpFullStack.ms_cart.application.dto.request.SortDirectionRequestDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.CartResponseDto;
 import com.PowerUpFullStack.ms_cart.application.dto.response.PaginationResponseDto;
+import com.PowerUpFullStack.ms_cart.application.dto.response.ProductResponseDto;
 
 public interface ICartHandler {
     void addProductToCart(AddProductToCartRequestDto addProductToCartRequestDto);
 
     void removeProductFromCart(long productId);
 
-    PaginationResponseDto<CartResponseDto>
+    PaginationResponseDto<ProductResponseDto>
     getPaginationCartByAscAndDescByProductNameAndBrandNameAndCategoryName
             (SortDirectionRequestDto sortDirectionRequestDto, FilterByRequestDto filterByRequestDto);
 }

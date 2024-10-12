@@ -18,6 +18,10 @@ public class OpenApiConstants {
     public static final String SUMMARY_REMOVE_CART = "Remove product from cart";
     public static final String DESCRIPTION_REMOVE_CART_201 = "Product removed from cart";
     public static final String DESCRIPTION_REMOVE_CART_409 = "Product not found in cart";
+
+    public static final String SUMMARY_GET_PAGINATION_CART = "Get pagination cart";
+    public static final String DESCRIPTION_GET_PAGINATION_CART_200 = "Pagination cart successful";
+    public static final String DESCRIPTION_GET_PAGINATION_CART_404 = "Pagination cart failed";
     // Content
 
     public static final String APPLICATION_JSON = "application/json";
